@@ -103,7 +103,10 @@ def validate_please_reply_uri(view):
         extra_context.update(
             dict((k, v)
             for (k, v) in kws.items()
-            if k in (slug_field, 'reply_list_id', 'user_hash'))
+            if k in (slug_field,
+                     'reply_list_id',
+                     'user_hash',
+                     template_object_name))
         )
 
         kws['extra_context'] = extra_context

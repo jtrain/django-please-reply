@@ -181,11 +181,14 @@ class ReplyFormViewTest(RelateEventsToGuests):
         """
         Test viewing a reply_form returns a 200 for an invited guest.
         """
-        self._user_views_event_statuscode_expected(
+        response = self._user_views_event_statuscode_expected(
                     user('sally'),
                     event('bbq'),
                     200
         )
+        self.assertContains(
+                response,
+                event('bbq').title, count=3)
 
     def test_view_event_fails_for_notinvited_guest(self):
         """
@@ -258,7 +261,7 @@ class ReplyFormViewTest(RelateEventsToGuests):
         self.assertEqual(response.status_code, code)
 
     def _user_views_event_statuscode_expected(self, user, event, code, **kws):
-        self._user_views_event(user, event,
+        return self._user_views_event(user, event,
                 partial(self.assertStatusCode, code=code), **kws)
 
     def _user_views_event(self, user, event, response_test, **kws):
@@ -281,4 +284,5 @@ class ReplyFormViewTest(RelateEventsToGuests):
 
         response = self.client.get(uri)
         response_test(response)
+        return response
 

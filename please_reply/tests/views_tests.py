@@ -12,7 +12,6 @@ from please_reply import settings as backup_settings
 from please_reply.tests.models import Event
 from please_reply.models import ReplyList, Reply, encode_userhash
 
-
 #--------------------------------------------------------------
 # Constants
 
@@ -177,6 +176,7 @@ class ReplyFormViewTest(RelateEventsToGuests):
     """
     Test that a user can reply to an event using a view.
     """
+
     def test_view_event_returns_200_for_invited_guest(self):
         """
         Test viewing a reply_form returns a 200 for an invited guest.

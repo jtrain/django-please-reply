@@ -17,13 +17,13 @@ urlpatterns = patterns('',
 
 
 
-                                               # param name     example.
-                                               #-----------     ---------------
+                                                # param name     example.
+                                                #-----------     ---------------
 
-        url(r'^(?P<slug>[-\w]+)\-'             # event-slug-    (bbq-at-beach-)
-            r'(?P<reply_list_id>[-\w]+)/'      # reply_list_id/ (1/)
-            r'(?P<user_hash>[-\w]+)/'          # user_hash/     (asg8sgl-2/)
-            r'(?P<response>[-\w]+)/$',         # response/      (accept/)
+        url((r'^(?P<slug>[-\w]+)\-'             # event-slug-    (bbq-at-beach-)
+             r'(?P<reply_list_id>[-\w]+)/'      # reply_list_id/ (1/)
+             r'(?P<user_hash>[-\w]+)/'          # user_hash/     (asg8sgl-2/)
+             r'(?P<response>[-\w]+)/$'),        # response/      (accept/)
 
             validate_please_reply_uri(replied_view), {
             'template'            : 'please_reply/replied.html',

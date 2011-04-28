@@ -11,13 +11,13 @@
 <p> Would you like to attend?</p>
 <ul>
   <li>
-    <a href="{% url please_reply_replied slug=slug reply_list_id=reply_list_id user_hash=user_hash response="yes" %}">
-      yes
+    <a href="{% url please_reply_replied slug=slug reply_list_id=reply_list_id user_hash=user_hash response="accept" %}">
+      accept
     </a>
   </li>
   <li>
-    <a href="{% url please_reply_replied slug reply_list_id user_hash "no" %}">
-      no
+    <a href="{% url please_reply_replied slug=slug reply_list_id=reply_list_id user_hash=user_hash response="decline" %}">
+      decline
     </a>
   </li>
 </ul>

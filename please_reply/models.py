@@ -1,3 +1,7 @@
+import random
+import zlib
+import base64
+
 from django.db import models
 from django.db.models import get_model
 from django.conf import settings
@@ -6,7 +10,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import ugettext_lazy as _
 
 from please_reply import settings as backup_settings
-from please_reply.exceptions import NotInvited
+from please_reply.exceptions import NotInvited, InvalidHash
 
 USER_MODEL = getattr(
                 settings,
@@ -18,6 +22,15 @@ class ReplyListManager(models.Manager):
     Defines helper functions to get all attendees for an event.
 
     """
+
+    def is_guest_attending(self, event, guest):
+        """
+        Returns true if the guest is marked as attending this event.
+
+        """
+        matching_guest = self.get_replylist_for(event
+            ).replies.filter(attending=True, guest=guest)
+        return any(matching_guest.all())
 
     def get_confirmed_guests_for(self, event):
         """
@@ -104,7 +117,7 @@ def make_simple_filter_manager(**filter_kwargs):
 
     class FilteredReplyManager(models.Manager):
         def get_query_set(self):
-            return super(AttendingManager, self).get_query_set(
+            return super(FilteredReplyManager, self).get_query_set(
                     ).filter(**filter_kwargs)
 
     return FilteredReplyManager
@@ -168,6 +181,12 @@ class Reply(models.Model):
     objects = ReplyManager()
     confirmed_guests = make_simple_filter_manager(attending=True)()
     not_responded = make_simple_filter_manager(responded=False)()
+    
+    def generate_userhash(self, salt):
+        """
+        create XOR encrypted and base64 encoded text version of the guest__pk.
+        """
+        return encode_userhash(self.guest.pk, self.replylist.pk, salt)
 
     class Meta:
         verbose_name = _("reply")
@@ -181,5 +200,71 @@ class Reply(models.Model):
                     self.replylist.content_object
         )
 
+#----------------------------------------------------------------------
+# Utilities
+def tinycode(key, text, reverse=False):
+    """
+    an XOR type encryption routine taken from 
+    http://code.activestate.com/recipes/266586-simple-xor-keyword-encryption/
+
+    This isn't a secure technique, I am only using it to slightly obscure an
+    otherwise obvious use of user.id in the uri. I know I could use a UUID for
+    this purpose, but I didn't want to add uuid as a dependancy for this
+    project.
+
+    """
+    rand = random.Random(key).randrange
+    if not reverse:
+        text = zlib.compress(text)
+    text = ''.join([chr(ord(elem)^rand(256)) for elem in text])
+    if reverse:
+        text = zlib.decompress(text)
+    return text
+
+
+
+def decode_userhash(userhash, reply_list_id, salt):
+    """
+    Decode and return the user-pk value.
+    Assume the unhashed text has the form:
+
+    userpk.
+
+    and was generated with key
+
+    salt%%reply_list_id
+
+    we are in big trouble if salt has %% in it!!.
+    so we assume they are not present.
+    """
+
+    reply_list_id = str(reply_list_id).replace("%%", "")
+    salt          = str(salt).replace("%%", "")
+
+    key = "%%".join([salt, reply_list_id])
+    userhash = base64.urlsafe_b64decode(str(userhash))
+
+    try:
+        return tinycode(key, userhash, reverse=True)
+    except zlib.error:
+        raise InvalidHash('attempted to decrypt %s with invalid key %s' %
+                                (userhash, key))
     
+def encode_userhash(userpk, reply_list_id, salt):
+    """
+    Return a base64 XOR encrypted text using a key of:
+
+    salt%%reply_list_id
+
+    where any '%%' has been removed from salt and reply_list_id
+    """
+
+    reply_list_id = unicode(reply_list_id).replace("%%", "")
+    salt          = unicode(salt).replace("%%", "")
+
+    key = "%%".join([salt, reply_list_id])
+
+    userhash = tinycode(key, str(userpk))
+    return base64.urlsafe_b64encode(userhash)
+
 

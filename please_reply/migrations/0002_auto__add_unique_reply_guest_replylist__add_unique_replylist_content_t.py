@@ -77,7 +77,8 @@ class Migration(SchemaMigration):
             'created_at': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'modified_at': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
-            'object_id': ('django.db.models.fields.CharField', [], {'max_length': '1023'})
+            'object_id': ('django.db.models.fields.CharField', [],
+                {'max_length': '999'})
         }
     }
 

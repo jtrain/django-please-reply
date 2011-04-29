@@ -155,3 +155,34 @@ class ReplyListManagementTest(RelateEventsToGuests):
                 sortname(guests(get_invited_guests_for(jenga)))
         )
 
+    def test_dupe_replylist_doesnt_change_responses(self):
+        """
+        Re-running ReplyList.objects.create_replylist shouldn't change
+        existing responses, but it should add new blank replies for new guests.
+
+        """
+        Reply.objects.reply_to_event_for(
+                event('jenga'),
+                user('sven'),
+                attending=True
+        )
+
+        ReplyList.objects.create_replylist(event('jenga'),
+                guests=[user('sven'), user('sally'), user('gertrude')]
+        )
+
+        #sven is attending, sally hasn't replied, and gertrude has just joined.
+        get_confirmed_guests_for = ReplyList.objects.get_confirmed_guests_for
+        self.assertEqual(
+                [user('sven')],
+                guests(get_confirmed_guests_for(event('jenga')))
+        )
+
+        get_invited_guests_for = ReplyList.objects.get_invited_guests_for
+        self.assertEqual(
+                sortname([user('sally'), user('gertrude'), user('sven')]),
+                sortname(guests(get_invited_guests_for(event('jenga'))))
+        )
+
+
+

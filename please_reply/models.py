@@ -59,13 +59,17 @@ class ReplyListManager(models.Manager):
     def create_replylist(self, event, guests=None):
         """
         Create a new reply list with optional guest-list.
+
+        Running a second time with the some of the same guests will not change
+        the replies for the existing guests but will add new blank replies for
+        the new guests.
         """
         if guests is None:
             guests = []
 
         content_type = ContentType.objects.get_for_model(event)
 
-        replylist = self.model(
+        replylist, created = self.model.objects.get_or_create(
                     object_id=event.pk,
                     content_type=content_type
         )
@@ -74,14 +78,16 @@ class ReplyListManager(models.Manager):
 
         for guest in guests:
 
-            emptyreply = Reply(
+            emptyreply, created = Reply.objects.get_or_create(
                     replylist=replylist,
-                    guest=guest,
-                    attending=False,
-                    responded=False
+                    guest=guest
             )
 
-            emptyreply.save()
+            if created:
+                emptyreply.attending=False
+                emptyreply.responded=False
+                emptyreply.save()
+
         return replylist
 
 class ReplyList(models.Model):
@@ -103,6 +109,7 @@ class ReplyList(models.Model):
         verbose_name = _("reply list")
         verbose_name_plural = _("reply lists")
         ordering = ("content_type", "-object_id")
+        unique_together = ('object_id', 'content_type')
 
     def __unicode__(self):
         return u"replies for %s" % (
@@ -192,6 +199,7 @@ class Reply(models.Model):
         verbose_name = _("reply")
         verbose_name_plural = _("replies")
         ordering = ("replylist", "-responded", "-attending", "guest")
+        unique_together = ('guest', 'replylist')
 
     def __unicode__(self):
         return u"%s is%s attending %s" % (

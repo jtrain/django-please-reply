@@ -109,7 +109,6 @@ class ReplyList(models.Model):
         verbose_name = _("reply list")
         verbose_name_plural = _("reply lists")
         ordering = ("content_type", "-object_id")
-        unique_together = ('object_id', 'content_type')
 
     def __unicode__(self):
         return u"replies for %s" % (
@@ -199,7 +198,6 @@ class Reply(models.Model):
         verbose_name = _("reply")
         verbose_name_plural = _("replies")
         ordering = ("replylist", "-responded", "-attending", "guest")
-        unique_together = ('guest', 'replylist')
 
     def __unicode__(self):
         return u"%s is%s attending %s" % (

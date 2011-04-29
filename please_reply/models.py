@@ -96,7 +96,7 @@ class ReplyList(models.Model):
     """
 
     # event instance.
-    object_id = models.CharField(max_length=1023)
+    object_id = models.CharField(max_length=999)
     content_type = models.ForeignKey(ContentType)
     content_object = generic.GenericForeignKey('content_type', 'object_id')
 

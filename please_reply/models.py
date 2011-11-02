@@ -250,8 +250,10 @@ def decode_userhash(userhash, reply_list_id, salt):
     salt          = str(salt).replace("%%", "")
 
     key = "%%".join([salt, reply_list_id])
-    userhash = base64.urlsafe_b64decode(str(userhash))
-
+    try:
+        userhash = base64.urlsafe_b64decode(str(userhash))
+    except TypeError:
+        raise InvalidHash('hash %s was not valid' % userhash)
     try:
         return tinycode(key, userhash, reverse=True)
     except zlib.error:

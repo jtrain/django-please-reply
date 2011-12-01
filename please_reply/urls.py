@@ -7,7 +7,7 @@ from please_reply.models import Reply
 
 urlpatterns = patterns('',
 
-        url(r'^(?P<slug>[-\w]+)\-(?P<reply_list_id>[-\w]+)/(?P<user_hash>[-\w]+)/$',
+        url(r'^(?P<slug>[-\w]+)\-(?P<reply_list_id>[-\w]+)/(?P<user_hash>[-=\w]+)/$',
             validate_please_reply_uri(direct_to_template), {
             'template'            : 'please_reply/reply_form.html',
             'template_object_name': 'object',
@@ -22,7 +22,7 @@ urlpatterns = patterns('',
 
         url((r'^(?P<slug>[-\w]+)\-'             # event-slug-    (bbq-at-beach-)
              r'(?P<reply_list_id>[-\w]+)/'      # reply_list_id/ (1/)
-             r'(?P<user_hash>[-\w]+)/'          # user_hash/     (asg8sgl-2/)
+             r'(?P<user_hash>[-=\w]+)/'          # user_hash/     (asg8sgl-2/)
              r'(?P<response>[-\w]+)/$'),        # response/      (accept/)
 
             validate_please_reply_uri(replied_view), {
